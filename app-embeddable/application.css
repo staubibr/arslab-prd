@@ -72,11 +72,11 @@ a {
 button {
     height: 30px;
     width: 30px;
-	background-color: #198CFF;
+	background-color: #a00000;
     color: #eee;
     font-size: 15px;
     border: none;
-    border-bottom: solid 2px #0051A3;
+    border-bottom: solid 2px #460202;
 	border-radius: 4px;
 	cursor: pointer;
 }
@@ -95,7 +95,7 @@ button:disabled {
 }
 
 button:not(:disabled):hover {
-  background: #0051A3;
+  background: #460202;
   transition: all .2s ease;
 }
 
@@ -174,6 +174,11 @@ button:not(:disabled):hover {
 .playback .record {
 	display:none;
 }
+
+.playback label {
+    color: #000000;
+}
+
 
 .popup button.close {
     border: none;
