@@ -232,3 +232,23 @@ main .grid-widget-container {
 	width:12px;
 	height:2px;
 }
+
+.consent {
+	text-align:center;
+}
+
+.consent .consent-container {
+    max-width: 350px;
+    display: inline-block;
+}
+
+.consent .consent-container .consent-message {
+    font-size: 1.1em;
+    font-weight: bold;
+    margin: 10px;
+}
+
+.consent .consent-container .consent-button {
+    width: 100px;
+    margin: 10px;
+}
