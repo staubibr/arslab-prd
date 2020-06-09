@@ -18,7 +18,11 @@ function WaitForDocument() {
 	});
 }
 
-function Start(responses) {	
+function Start(responses) {
+	var path = location.href.split("/").slice(0,-2).join("/");
+
+	streamSaver.mitm = path + "/api-web-devs/references/StreamSaver/mitm.html";
+	
 	Core.locale = document.documentElement.lang || "en";
 	
 	Core.nls = responses[0];
