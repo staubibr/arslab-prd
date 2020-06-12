@@ -19,7 +19,7 @@ export default class LopezCell extends Parser {
 		var log = files.find(function(f) { return f.name.match(/\.log/i); });
 
 		if (!ma || !log) {
-			d.Reject(new Error("A model (.ma) and a log (.log) file must be provided for the CD++ Cell-DEVS parser."));
+			d.Reject(new Error("A model (.ma) and a log (.log) file must be provided for the Lopez Cell-DEVS parser."));
 		
 			return d.promise;
 		}
