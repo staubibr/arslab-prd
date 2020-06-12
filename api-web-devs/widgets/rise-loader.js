@@ -1,92 +1,106 @@
 'use strict';
 
-import Core from '../../api-basic/tools/core.js';
-import Dom from '../../api-basic/tools/dom.js';
-import Net from '../../api-basic/tools/net.js';
-import Templated from '../../api-basic/components/templated.js';
-// import Zip from '../../api-web-devs/tools/zip.js';
+import Core from '../tools/core.js';
+import Dom from '../tools/dom.js';
+import Net from '../tools/net.js';
+import Templated from '../components/templated.js';
 
 export default Core.Templatable("Widget.RiseList", class RiseLoader extends Templated {
 
     constructor(id) {
         super(id);
 		
-		
 		var path = location.href.split("/");
 		
 		path.pop();
 		path.pop();
 	    
-	    	path.push('devs-logs');
+	    path.push('devs-logs');
 	    
 		path = path.join("/");
 		
 		// TODO : This is temporary, just to showcase how we could read from RISE. We need
 		// to fix a bunch of issues with RISE before we can fully implement this.
 		this.models = [{
-				"name": "Alternate Bit Protocol Model",
+				"name": "Alternate Bit Protocol",
 				"type" : "DEVS",
 				"url": path + "/ABP/"
 			}, {
-				"name": "Addiction Model",
+				"name": "Drugs and Addiction",
 				"type" : "Cell-DEVS",
-				"url": path + "/Addiction/"
+				"url": path + "/Addiction/Final/"
 			}, {
-				"name": "CO2 Model",
+				"name": "Classroom CO2",
 				"type" : "Cell-DEVS",
 				"url": path + "/CO2/"
 			}, {
-				"name": "Farm Model",
+				"name": "COVID (TR 0.4, DR 0.01)",
+				"type" : "Cell-DEVS",
+				"url": path + "/COVID/tr_0.4_dr_0.01/"
+			}, {
+				"name": "Employee Behaviour",
+				"type" : "Cell-DEVS",
+				"url": path + "/Employee Behaviour/2/"
+			}, {
+				"name": "Agricultural Farm",
 				"type" : "DEVS",
 				"url": path + "/Farm/"
-			}, /*{
-				"name": "Fire Model",
+			}, {
+				"name": "Fire Spread",
 				"type" : "Cell-DEVS",
 				"url": path + "/Fire/"
-			}, */{
-				"name": "Fire And Rain Model",
+			}, {
+				"name": "Fire And Rain",
 				"type" : "Cell-DEVS",
 				"url": path + "/Fire and Rain/"
-			}, /*{
-				"name": "Life Model #1",
-				"type" : "Cell-DEVS",
-				"url": path + "/Life/1/"
 			}, {
-				"name": "Life Model #2",
+				"name": "Food Chain",
 				"type" : "Cell-DEVS",
-				"url": path + "/Life/2/"
+				"url": path + "/Food Chain/"
 			}, {
-				"name": "Life Model #3",
-				"type" : "Cell-DEVS",
-				"url": path + "/Life/3/"
-			}, */{
 				"name": "Logistic Urban Growth Model #1",
 				"type" : "Cell-DEVS",
 				"url": path + "/LUG/1/"
 			}, {
 				"name": "Logistic Urban Growth Model #2",
 				"type" : "Cell-DEVS",
-				"url": path + "/LUG/1/"
+				"url": path + "/LUG/2/"
 			}, {
 				"name": "Logistic Urban Growth Model #3",
 				"type" : "Cell-DEVS",
-				"url": path + "/LUG/1/"
-			}, /*{
-				"name": "Swarm Model",
+				"url": path + "/LUG/3/"
+			}, {
+				"name": "Lynx & Hare",
 				"type" : "Cell-DEVS",
-				"url": path + "/Swarm/"
-			},*/ {
-				"name": "Tumor Model",
+				"url": path + "/Lynx Hare/"
+			}, {
+				"name": "Sheeps on a Ranch",
+				"type" : "Cell-DEVS",
+				"url": path + "/Ranch/hot/"
+			}, {
+				"name": "Settlement Growth",
+				"type" : "Cell-DEVS",
+				"url": path + "/Region/"
+			}, {
+				"name": "Smog",
+				"type" : "Cell-DEVS",
+				"url": path + "/Smog/"
+			}, {
+				"name": "Tumor Growth",
 				"type" : "Cell-DEVS",
 				"url": path + "/Tumor/"
 			}, {
-				"name": "UAV Model",
+				"name": "UAV Search",
 				"type" : "Cell-DEVS",
 				"url": path + "/UAV/"
 			}, {
-				"name": "Worm Model",
+				"name": "Worm",
 				"type" : "Cell-DEVS",
 				"url": path + "/Worm/"
+			}, {
+				"name": "Worm Spread",
+				"type" : "Cell-DEVS",
+				"url": path + "/Worm Spread/"
 			}
 		]
 		
@@ -112,7 +126,7 @@ export default Core.Templatable("Widget.RiseList", class RiseLoader extends Temp
 
 		var p1 = Net.Request(`${model.url}simulation.json`, null, 'blob');
 		var p2 = Net.Request(`${model.url}transitions.csv`, null, 'blob');
-		var p3 = Net.JSON(`${model.url}options.json`);
+		var p3 = Net.Request(`${model.url}options.json`, null, 'blob');
 
 		var defs = [p1, p2, p3];
 
@@ -127,23 +141,15 @@ export default Core.Templatable("Widget.RiseList", class RiseLoader extends Temp
 			
 			files.push(new File([responses[0]], 'simulation.json'));
 			files.push(new File([responses[1]], 'transitions.csv'));
+			files.push(new File([responses[2]], 'options.json'));
 			
 			if (model.type == "DEVS") files.push(new File([responses[3]], 'diagram.svg'));
 			
-			this.Emit("FilesReady", { files : files, options : options });
-		
-			// Zip.LoadZip(blob).then(this.onZip_Loaded.bind(this), this.onError_Handler.bind(this));
+			this.Emit("FilesReady", { files : files });
 		}.bind(this);
 
 		Promise.all(defs).then(success, this.onError_Handler.bind(this));
     }
-	/*
-	onZip_Loaded(result) {
-		Dom.AddCss(this.Elem("wait"), "hidden");
-		
-		this.Emit("FilesReady", { files : result.files });
-	}
-	*/
 
 	onError_Handler(error) {
 		Dom.AddCss(this.Elem("wait"), "hidden");

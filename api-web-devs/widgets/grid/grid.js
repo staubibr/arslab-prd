@@ -1,15 +1,15 @@
 'use strict';
 
-import Core from '../../../api-basic/tools/core.js';
-import Dom from '../../../api-basic/tools/dom.js';
-import Templated from '../../../api-basic/components/templated.js';
+import Core from '../../tools/core.js';
+import Dom from '../../tools/dom.js';
+import Templated from '../../components/templated.js';
 
 const STROKE_WIDTH = 2;
 const DEFAULT_COLOR = "#fff";
 
 export default Core.Templatable("Widgets.Grid", class Grid extends Templated { 
 
-	get Canvas() { return this.Node("canvas"); }
+	get Canvas() { return this.Elem("canvas"); }
 	
 	set Dimensions(value) { this.dimensions = value; }
 	
@@ -18,6 +18,8 @@ export default Core.Templatable("Widgets.Grid", class Grid extends Templated {
 	set Spacing(value) { this.spacing = value; }
 	
 	set Layers(value) { this.layers = value; }
+	
+	set Styler(value) { this.styler = value; }
 
 	constructor(node) {
 		super(node);
@@ -27,6 +29,7 @@ export default Core.Templatable("Widgets.Grid", class Grid extends Templated {
 		this.columns = null;
 		this.spacing = null;
 		this.size = null;
+		this.styler = null;
 		
 		this.layers = [];
 		this.grids = [];
@@ -106,9 +109,9 @@ export default Core.Templatable("Widgets.Grid", class Grid extends Templated {
 		this.Elem("canvas").height = this.total.h;	
 	}
 	
-	// TODO : grid shouldn't use simulation object
-	Draw(state, palette, simulation) {
-		if (this.dimensions) this.DrawState(state, palette, simulation);
+	// TODO : grid shouldn't use simulation object maybe?
+	Draw(state, simulation) {
+		if (this.dimensions) this.DrawState(state, simulation);
 		
 		else this.Default(DEFAULT_COLOR);
 	}
@@ -122,35 +125,43 @@ export default Core.Templatable("Widgets.Grid", class Grid extends Templated {
 		this.ctx.fillRect(0, 0, this.size.w, this.size.h);
 	}
 	
-	// TODO : grid shouldn't use simulation object
-	DrawState(state, palette, simulation) {
-		for (var i = 0; i < this.layers.length; i++) {			
+	// TODO : grid shouldn't use simulation object maybe?
+	DrawState(state, simulation) {
+		for (var i = 0; i < this.layers.length; i++) {
+			var l = this.layers[i];
+			var scale = this.styler.GetScale(l.style);
+			
 			for (var x = 0; x < this.dimensions.x; x++) {
 				for (var y = 0; y < this.dimensions.y; y++) {
-					var l = this.layers[i];
-					
 					for (var p = 0; p < l.ports.length; p++) {
 						var v = state.GetValue([x, y, l.z], l.ports[p]); // value of cell to draw
+						 
+						var color = scale.GetColor(v) || 'rgb(200, 200, 200)';
 						
-						this.DrawCell(x, y, i, palette.GetColor(v));
+						this.DrawCell(x, y, i, color);
 					}
 					
 					var id = x + "-" + y + "-" + l.z; // id of cell to draw
 					
-					if (simulation.IsSelected(id)) this.DrawCellBorder(x, y, i, palette.SelectedColor);
+					if (simulation.IsSelected(id)) this.DrawCellBorder(x, y, i, scale.SelectedColor);
 				}
 			}
 		}
 	}
 	
-	// TODO : grid shouldn't use simulation object
-	DrawChanges(frame, palette, simulation) {
+	// TODO : grid shouldn't use simulation object maybe?
+	DrawChanges(frame, simulation) {
 		this.layers.forEach((l, i) => {
+			var l = this.layers[i];
+			var scale = this.styler.GetScale(l.style);
+			
 			l.ports.forEach(p => {
 				frame.TransitionsByIndex(l.z, p).forEach((t) => {
-					this.DrawCell(t.X, t.Y, i, palette.GetColor(t.Value));
+					var color = scale.GetColor(t.Value) || 'rgb(200, 200, 200)';
+						
+					this.DrawCell(t.X, t.Y, i, color);
 					
-					if (simulation.IsSelected(t.Id.join("-"))) this.DrawCellBorder(t.X, t.Y, i, palette.SelectedColor);
+					if (simulation.IsSelected(t.Id.join("-"))) this.DrawCellBorder(t.X, t.Y, i, scale.SelectedColor);
 				});
 			});
 		});

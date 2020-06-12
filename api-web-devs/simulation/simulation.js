@@ -1,11 +1,12 @@
 'use strict';
 
-import Evented from '../../api-basic/components/evented.js';
-import Palette from './palettes/basic.js';
+import Evented from '../components/evented.js';
 import Cache from './cache.js';
 import Frame from './frame.js';
 
 export default class Simulation extends Evented { 
+	
+	get Name() { return this.name; }
 	
 	get State() { return this.state; }
 
@@ -107,19 +108,10 @@ export default class Simulation extends Evented {
 		this.Emit("Move", { frame : reverse, direction:"previous" });
 	}
 	
-	StartRecord() {
-		this.Emit("RecordStart");
-	}
-	
-	StopRecord() {
-		this.Emit("RecordStop");
-	}
-	
 	Save() {
 		return {
 			i : this.state.i,
-			selection : this.selected,
-			palette : this.palette.Save()
+			selection : this.selected
 		}
 	}
 	
@@ -127,7 +119,6 @@ export default class Simulation extends Evented {
 		this.GoToFrame(config.i);
 		
 		this.selected = config.selection;
-		this.palette.Load(config.palette);
 		
 		this.Emit("Session", { simulation:this });
 	}

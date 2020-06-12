@@ -1,36 +1,27 @@
 'use strict';
 
-import Evented from '../../api-basic/components/evented.js';
+import Evented from '../components/evented.js';
+import Styler from './styler.js';
 
 export default class Settings extends Evented { 
 
-	constructor() {
-		super();
-				
-		this.json = {
-			diagram : {
-				width : 600,
-				height : 400,
-				aspect : true
-			},
-			grid : {
-				columns : 1,
-				width : 400,
-				height : 400,
-				spacing : 10,
-				showGrid : false,
-				aspect : true,
-				layers : null
-			},
-			playback : {
-				speed : 10,
-				loop : false,
-				cache : 10
-			}
-		}
+	set json(value) {
+		this._json = value;
+		
+		this.styler = Styler.FromJson(value.grid.styles);
 	}
 	
-	GridSize(simulation, nGrids) {
+	get json() { return this._json; }
+
+	set layers (values) { this.json.grid.layers = value; }
+
+	constructor() {
+		super();
+		
+		this._json = Settings.Default(0);
+	}
+		
+	CanvasSize(simulation, nGrids) {
 		nGrids = nGrids || simulation.Dimensions.z;
 		
 		var aspect = this.Get("grid", "aspect");
@@ -47,7 +38,7 @@ export default class Settings extends Evented {
 		
 		return { width : width, height : height }
 	}
-		
+	
 	DiagramSize(simulation) {		
 		var aspect = this.Get("diagram", "aspect");
 		var width = this.Get("diagram", "width");
@@ -74,11 +65,58 @@ export default class Settings extends Evented {
 		return { group:group, property:property, value:value }
 	}
 	
+	ToString() {
+		return JSON.stringify(this.json);
+	}
+	
 	static FromJson(json) {
 		var settings = new Settings();
 		
 		settings.json = json;
 		
 		return settings;
+	}
+	
+	static Default(layers, ports) {
+		layers = layers || 0;
+		
+		var options =  {
+			diagram : {
+				width : 600,
+				height : 400,
+				aspect : true
+			},
+			grid : {
+				columns : 1,
+				width : 360,
+				height : 360,
+				spacing : 10,
+				showGrid : false,
+				aspect : true,
+				layers : [],
+				styles : []
+			},
+			playback : {
+				speed : 10,
+				loop : false,
+				cache : 10
+			}
+		}		
+		
+		if (!layers) return options;
+		
+		for (var i = 0; i < layers; i++) {
+			ports.forEach(p => {
+				options.grid.layers.push({
+					z : i,
+					ports : [p.name],
+					style : 0
+				})
+			});
+		}
+		
+		options.grid.columns = (layers.length > 3) ? 3 : layers.length;	
+		
+		return options;
 	}
 }

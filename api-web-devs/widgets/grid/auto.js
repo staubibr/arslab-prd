@@ -1,12 +1,13 @@
 'use strict';
 
-import Core from '../../../api-basic/tools/core.js';
-import Dom from '../../../api-basic/tools/dom.js';
-import Tooltip from '../../../api-basic/ui/tooltip.js';
-import Grid from './grid.js';
+import Core from '../../tools/core.js';
+import Dom from '../../tools/dom.js';
+import Tooltip from '../../ui/tooltip.js';
 import Automator from '../../components/automator.js';
 
 export default Core.Templatable("Auto.Grid", class AutoGrid extends Automator { 
+
+	get Canvas() { return this.Widget.Canvas; }
 
 	constructor(grid, simulation, options) {
 		options = options || {};	// Default empty options if not provided
@@ -21,11 +22,7 @@ export default Core.Templatable("Auto.Grid", class AutoGrid extends Automator {
 		this.Widget.Columns = options.columns;
 		this.Widget.Spacing	= options.spacing;
 		this.Widget.Layers	= options.layers;
-		// this.Widget.Z = options.z;
-		// this.Widget.Ports = options.ports;
-		
-		// this.z = options.z;
-		// this.ports = options.ports;
+		this.Widget.Styler	= options.styler;
 	}
 	
 	AttachHandlers(options) {
@@ -37,7 +34,8 @@ export default Core.Templatable("Auto.Grid", class AutoGrid extends Automator {
 		
 		h.push(this.Simulation.On("Move", this.onSimulationMove_Handler.bind(this)));
 		h.push(this.Simulation.On("Jump", this.onSimulationJump_Handler.bind(this)));
-		h.push(this.Simulation.palette.On("Change", this.onSimulationPaletteChanged_Handler.bind(this)));
+		
+		h.push(options.styler.On("Change", this.onSimulationPaletteChanged_Handler.bind(this)));
 		
 		this.Handle(h);
 	}
@@ -53,25 +51,25 @@ export default Core.Templatable("Auto.Grid", class AutoGrid extends Automator {
 		
 		var s = this.Simulation;
 		
-		this.Widget.DrawState(s.state, s.Palette, s);
+		this.Widget.DrawState(s.state, s);
 	}
 
 	onSimulationMove_Handler(ev) {		
 		var s = this.Simulation;
 		
-		this.Widget.DrawChanges(ev.frame, s.Palette, s);
+		this.Widget.DrawChanges(ev.frame, s);
 	}
 	
 	onSimulationJump_Handler(ev) {
 		var s = this.Simulation;
 		
-		this.Widget.DrawState(s.state, s.Palette, s);
+		this.Widget.DrawState(s.state, s);
 	}
 	
 	onSimulationPaletteChanged_Handler(ev) {
 		var s = this.Simulation;
 		
-		this.Widget.DrawState(s.state, s.Palette, s);
+		this.Widget.DrawState(s.state, s);
 	}
 	
 	onMouseMove_Handler(ev) {
@@ -113,23 +111,4 @@ export default Core.Templatable("Auto.Grid", class AutoGrid extends Automator {
 		
 		this.Widget.DrawCellBorder(ev.data.x, ev.data.y, ev.data.k, color);
 	}
-	
-	/*
-	import Recorder from '../../components/record.js';
-		
-	this.recorder = new Recorder(this.Widget.Canvas);
-
-	var h6 = this.Simulation.On("RecordStart", this.onSimulationRecordStart_Handler.bind(this));
-	var h7 = this.Simulation.On("RecordStop", this.onSimulationRecordStop_Handler.bind(this));
-		
-	onSimulationRecordStart_Handler(ev) {
-		this.recorder.Start();	
-	}
-	
-	onSimulationRecordStop_Handler(ev) {	
-		this.recorder.Stop().then(function(ev) {
-			this.recorder.Download(this.simulation.name);
-		}.bind(this));	
-	}
-	*/
 });
