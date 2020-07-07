@@ -7,13 +7,15 @@ export default class Settings extends Evented {
 
 	set json(value) {
 		this._json = value;
-		
+
 		this.styler = Styler.FromJson(value.grid.styles);
 	}
 	
 	get json() { return this._json; }
 
 	set layers (values) { this.json.grid.layers = value; }
+	
+	get layers () { return this.json.grid.layers; }
 
 	constructor() {
 		super();
@@ -69,6 +71,12 @@ export default class Settings extends Evented {
 		return JSON.stringify(this.json);
 	}
 	
+	ToFile() {
+		var content = this.ToString();
+		
+		return new File([content], "options.json", { type:"application/json", endings:'native' });
+	}
+	
 	static FromJson(json) {
 		var settings = new Settings();
 		
@@ -88,8 +96,8 @@ export default class Settings extends Evented {
 			},
 			grid : {
 				columns : 1,
-				width : 360,
-				height : 360,
+				width : 350,
+				height : 350,
 				spacing : 10,
 				showGrid : false,
 				aspect : true,
@@ -106,16 +114,20 @@ export default class Settings extends Evented {
 		if (!layers) return options;
 		
 		for (var i = 0; i < layers; i++) {
-			ports.forEach(p => {
+			ports.forEach((p, j) => {
+				var k = (i * ports.length) + j;
+				
 				options.grid.layers.push({
 					z : i,
 					ports : [p.name],
-					style : 0
+					style : (p.style != undefined) ? p.style : k
 				})
 			});
 		}
 		
-		options.grid.columns = (layers > 3) ? 3 : layers;	
+		var n = options.grid.layers.length;
+		
+		options.grid.columns = (n > 3) ? 3 : n;	
 		
 		return options;
 	}

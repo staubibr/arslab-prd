@@ -5,11 +5,10 @@ import Dom from '../tools/dom.js';
 import Templated from '../components/templated.js';
 import BoxInput from '../ui/box-input-files.js';
 
-import Zip from '../../api-web-devs/tools/zip.js';
-
 import CdppDevs	from '../parsers/CdppDevs.js';
 import CdppCell	from '../parsers/CdppCell.js';
 import LopezCell from '../parsers/LopezCell.js';
+import CadmiumCell from '../parsers/CadmiumCell.js';
 
 export default Core.Templatable("Widget.Converter", class Converter extends Templated { 
 	
@@ -41,7 +40,7 @@ export default Core.Templatable("Widget.Converter", class Converter extends Temp
 			},
 			"Cadmium" : {
 				"DEVS" : null,
-				"Cell-DEVS" : null
+				"Cell-DEVS" : CadmiumCell
 			}
 		};
     }
@@ -106,20 +105,13 @@ export default Core.Templatable("Widget.Converter", class Converter extends Temp
 			Dom.AddCss(this.Elem("wait"), "hidden");
 		
 			this.Emit("error", { error:error })
-		});
+		}, (error) => { this.OnError(error); });
 	}
 	
 	onParser_Parsed(parser, result) {
 		Dom.AddCss(this.Elem("wait"), "hidden");
-		
-		try {
-			Zip.SaveZipStream(result.name, result.AsFiles()).then((ev) => {
-				this.Emit("converted");
-			});
-		}
-		catch (error) {
-			this.Emit("error", { error:error });
-		}
+					
+		this.Emit("converted", { files:result.AsFiles() });
 	}
 	
 	UpdateButton() {
@@ -127,6 +119,10 @@ export default Core.Templatable("Widget.Converter", class Converter extends Temp
 		var type = this.Node("types").Node("input:checked");
 		
 		this.Elem("parse").disabled = !simulator || !type || this.files == null;
+	}
+
+	OnError(error) {
+		this.Emit("error", { error:error });
 	}
 
 	Template() {

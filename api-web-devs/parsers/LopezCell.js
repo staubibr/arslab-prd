@@ -19,7 +19,7 @@ export default class LopezCell extends Parser {
 		var log = files.find(function(f) { return f.name.match(/\.log/i); });
 
 		if (!ma || !log) {
-			d.Reject(new Error("A model (.ma) and a log (.log) file must be provided for the Lopez Cell-DEVS parser."));
+			d.Reject(new Error("A model (.ma) and a log (.log) file must be provided for the CD++ Cell-DEVS parser."));
 		
 			return d.promise;
 		}
@@ -92,11 +92,12 @@ export default class LopezCell extends Parser {
 		ma.models[0].ports = ma.models[0].ports.map(p => { 
 			return {
 				name : "out_" + p,
-				type : "output"
+				type : "output",
+				style : 0
 			} 
 		});
 		
-		ma.models[0].ports.unshift({ name:"out", type:"output" });
+		ma.models[0].ports.unshift({ name:"out", type:"output", style:0 });
 		
 		return ma;
 	}
