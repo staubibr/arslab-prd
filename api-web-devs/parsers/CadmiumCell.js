@@ -37,7 +37,7 @@ export default class CadmiumCell extends Parser {
 				this.max[p.name] = -Infinity;
 			});
 			
-			this.ReadByChunk(log, this.ParseLogChunk.bind(this, cfg)).then(log => {				
+			this.ReadByChunk(log, this.ParseLogChunk.bind(this, cfg)).then(log => {		
 				if (!log) return d.Reject(new Error("Unable to parse the log (.log) file."));
 				
 				var models = [{
@@ -48,44 +48,13 @@ export default class CadmiumCell extends Parser {
 				var simulation = new Simulation(cfg.model, "Cadmium", "Cell-DEVS", models, cfg.size);
 				var transitions = new TransitionsCA(log);
 				
-				var options = Settings.Default(1, cfg.ports);
+				var options = Settings.Default();
 				
-				options.grid.styles = [];
+				options.grid.styles = cfg.styles ? cfg.styles : this.DefaultStyle(cfg.ports, this.max, this.min);
 				
-				if (cfg.styles) options.grid.styles = cfg.styles;
-				
-				else {
-					var colors = [[215,48,39],[244,109,67],[253,174,97],[254,224,144],[255,255,191],[224,243,248],[171,217,233]];
+				options.grid.layers = cfg.layers ? cfg.layers : Settings.DefaultLayers(1, cfg.ports);
 
-					// AUTO GENERATE STYLE. THIS WILL HAVE TO GO AWAY. WHAT IF VALUE IS NOT A NUMBER? NOMINAL CLASSES WONT WORK
-					cfg.ports.forEach(p => {
-						var step = (this.max[p.name] - this.min[p.name]) / colors.length;
-						
-						var style = colors.map((c, i) => {
-							var start = this.min[p.name] + i * step;
-							
-							return { start:start, end:start + step, color:c }
-						});
-						
-						options.grid.styles.push(style);
-					});
-					// END OF AUTO STYLE GENERATION
-					
-					// AUTO GENERATE STYLE. THIS WILL HAVE TO GO AWAY. WHAT IF VALUE IS NOT A NUMBER? NOMINAL CLASSES WONT WORK
-					/*
-					var colors = [[215,48,39],[244,109,67],[253,174,97],[254,224,144],[255,255,191],[224,243,248],[171,217,233],[116,173,209],[69,117,180]];
-					var step = (this.max - this.min) / colors.length;
-					
-					options.grid.styles[0] = colors.map((c, i) => {
-						var start = this.min + i * step;
-						
-						return { start:start, end:start + step, color:colors[i] }
-					});
-					
-					options.grid.styles[0][4].end++;
-					*/
-					// END OF AUTO STYLE GENERATION
-				}
+				options.grid.columns = Settings.DefaultColumns(options.grid.layers);
 				
 				var files = new Files(simulation, transitions, null, new Options(options));
 				
@@ -139,5 +108,21 @@ export default class CadmiumCell extends Parser {
 		};
 		
 		return parsed;
+	}
+	
+	DefaultStyle(ports, max, min) {
+		var colors = [[215,48,39],[244,109,67],[253,174,97],[254,224,144],[255,255,191],[224,243,248],[171,217,233]];
+
+		return ports.map(p => {
+			var step = (max[p.name] - min[p.name]) / colors.length;
+			
+			var style = colors.map((c, i) => {
+				var start = min[p.name] + i * step;
+				
+				return { start:start, end:start + step, color:c }
+			});
+			
+			return style;
+		});
 	}
 }
